@@ -20,8 +20,6 @@ const flow = async () => {
         getOuterHeight: () => flowfieldSettings.height * flowfieldSettings.inner
     }
 
-    const chunks = _.chunk(data.map(d => d / max), flowfieldSettings.width * flowfieldSettings.height).map(chunk => _.shuffle(chunk))
-
     const createParticles = (size, sketch) => {
         let _particles = []
 
@@ -70,32 +68,39 @@ const flow = async () => {
         }
     }
 
-    const flowfield = (() => {
+    // data:
+    // eine liste von daten/sensordaten-feldern (hier länge des kraftvektors)
+    // über welche interpoliert wird
+    // settings
+    const flowfield = (({ data, max }, { width, height }) => {
+        // chunk values into "field states"
+        const fields = _.chunk(data.map(d => d / max), flowfieldSettings.width * flowfieldSettings.height).map(chunk => _.shuffle(chunk))
+
         let cache = {}
         // create initial cache values
-        for (let i = 0; i < flowfieldSettings.width; i++) {
+        for (let i = 0; i < width; i++) {
             cache[i] = {}
-            for (let j = 0; j < flowfieldSettings.height; j++) {
+            for (let j = 0; j < height; j++) {
                 cache[i][j] = {}
             }
         }
 
         let forceCache = {}
         // create initial cache values
-        for (let i = 0; i < flowfieldSettings.width; i++) {
+        for (let i = 0; i < width; i++) {
             forceCache[i] = {}
-            for (let j = 0; j < flowfieldSettings.height; j++) {
+            for (let j = 0; j < height; j++) {
                 forceCache[i][j] = null
             }
         }
 
         const update = (t) => {
-            if (t > chunks.length) {
+            if (t > fields.length) {
                 return false
             }
             // clear cache
-            for (let i = 0; i < flowfieldSettings.width; i++) {
-                for (let j = 0; j < flowfieldSettings.height; j++) {
+            for (let i = 0; i < width; i++) {
+                for (let j = 0; j < height; j++) {
                     cache[i][j] = {}
                     forceCache[i][j] = null
                 }
@@ -105,21 +110,21 @@ const flow = async () => {
 
         const energy = (t) => {
             const [a, b] = blend(t)
-            const v1 = chunks[a[1]] ? chunks[a[1]].reduce(
+            const v1 = fields[a[1]] ? fields[a[1]].reduce(
                 (acc, val) => {
                     acc += val
                     return acc
                 }, 0
             ) : 0
 
-            const v2 = chunks[b[1]] ? chunks[b[1]].reduce(
+            const v2 = fields[b[1]] ? fields[b[1]].reduce(
                 (acc, val) => {
                     acc += val
                     return acc
                 }, 0
             ) : 0
 
-            return (v1 * a[0] + v2 * b[0]) / (flowfieldSettings.width * flowfieldSettings.height)
+            return (v1 * a[0] + v2 * b[0]) / (width * height)
         }
 
         const get = (x, y, t, neighbours = true) => {
@@ -129,15 +134,15 @@ const flow = async () => {
 
             const [a, b] = blend(t)
 
-            const v1 = (chunks[a[1]] ? chunks[a[1]][x * flowfieldSettings.height + y] : 0) * a[0]
-            const v2 = (chunks[b[1]] ? chunks[b[1]][x * flowfieldSettings.height + y] : 0) * b[0]
+            const v1 = (fields[a[1]] ? fields[a[1]][x * height + y] : 0) * a[0]
+            const v2 = (fields[b[1]] ? fields[b[1]][x * height + y] : 0) * b[0]
 
             let neighboursValues = 0
             const neighs = []
             if (neighbours) {
                 for (let i = x - 3; i < x + 3; i++) {
                     for (let j = y - 3; j < y + 3; j++) {
-                        if (i >= 0 && j >= 0 && i < flowfieldSettings.width && j < flowfieldSettings.height) {
+                        if (i >= 0 && j >= 0 && i < width && j < height) {
                             neighs.push([i, j])
                         }
                     }
@@ -164,7 +169,7 @@ const flow = async () => {
             update,
             energy
         }
-    })()
+    })(fetchedData, flowfieldSettings)
 
     new p5(sketch => {
         let start = null
@@ -206,7 +211,7 @@ const flow = async () => {
                 sketch.rect(0, 0, 150, 150)
                 sketch.fill(255)
                 sketch.text(t, 30, 30)
-                sketch.text(chunks.length, 30, 60)
+                // sketch.text(chunks.length, 30, 60)
                 sketch.text(sketch.millis(), 30, 90)
                 particles.update(flowfield, t)
                 particles.forEach(particle => {
