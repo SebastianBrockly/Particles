@@ -9,7 +9,6 @@ import { blend } from './utils'
 
 const flow = async () => {
     const fetchedData = await fetchData()
-    const { data, max } = fetchedData
 
     // flowfield settings
     const flowfieldSettings = {
@@ -21,9 +20,9 @@ const flow = async () => {
     }
 
     const createParticles = (size, sketch) => {
-        let _particles = []
+        let particles = []
 
-        const forEach = (fn) => _particles.forEach(fn)
+        const forEach = (fn) => particles.forEach(fn)
 
         const create = (flowfield, t) => {
             const positionX = sketch.random(0, flowfieldSettings.getOuterWidth()) / flowfieldSettings.inner
@@ -42,17 +41,17 @@ const flow = async () => {
         }
 
         const emit = (flowfield, t) => {
-            _particles.push(create(flowfield, t))
+            particles.push(create(flowfield, t))
         }
 
         const update = (flowfield, t) => {
             const activity = flowfield.energy(t)
-            _particles = _particles.filter(particle => particle.isAlive())
+            particles = particles.filter(particle => particle.isAlive())
 
             // TODO: bessere Funktion/Prädikat schreiben, welche neue Partikel emittiert. Hier wird nur EIN particle emittiert,
             // wenn die übergebene flowfield-activity > threshold ist und die maximale Anzahl von Partikeln nicht erreicht ist.
 
-            if (activity > 0.1 && _particles.length < size * activity) {
+            if (activity > 0.1 && particles.length < size * activity) {
                 // how much?
                 const times = Math.floor(activity * 100 / 5)
                 for (let i = 0; i < times; i++) {
@@ -64,7 +63,7 @@ const flow = async () => {
         return {
             forEach,
             update,
-            length: () => _particles.length
+            length: () => particles.length
         }
     }
 
