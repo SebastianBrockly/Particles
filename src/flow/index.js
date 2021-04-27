@@ -184,7 +184,6 @@ const flow = async () => {
         }
 
         const getForce = (x, y, t) => forceCache[x][y] || (forceCache[x][y] = p5.Vector.fromAngle(get(x, y, t) * 2 * Math.PI))
-        // const getForce = (x, y, t) => p5.Vector.fromAngle(get(x, y, t) * 2 * Math.PI)
 
         return {
             get: getForce,
@@ -193,7 +192,7 @@ const flow = async () => {
         }
     })()
 
-    new Loop(sketch => {
+    new p5(sketch => {
         let start = null
         let t = 0
 
