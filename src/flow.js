@@ -4,6 +4,7 @@ import _ from 'lodash'
 import { getDataset } from './api'
 
 import Particle from './Particle'
+import Image, { Loop } from './Draw'
 
 const flow = async () => {
     // read data
