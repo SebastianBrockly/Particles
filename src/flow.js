@@ -39,6 +39,7 @@ const flow = async () => {
         ]
     }
 
+
     const createParticles = (size, sketch) => {
         let _particles = []
 
@@ -114,13 +115,27 @@ const flow = async () => {
             }
         }
 
-        const update = () => {
+        let forceCache = {}
+        // create initial cache values
+        for (let i = 0; i < flowfieldSettings.width; i++) {
+            forceCache[i] = {}
+            for (let j = 0; j < flowfieldSettings.height; j++) {
+                forceCache[i][j] = null
+            }
+        }
+
+        const update = (t) => {
+            if (t > chunks.length) {
+                return false
+            }
             // clear cache
             for (let i = 0; i < flowfieldSettings.width; i++) {
                 for (let j = 0; j < flowfieldSettings.height; j++) {
                     cache[i][j] = {}
+                    forceCache[i][j] = null
                 }
             }
+            return true
         }
 
         const energy = (t) => {
@@ -177,32 +192,35 @@ const flow = async () => {
             return value
         }
 
+        const getForce = (x, y, t) => forceCache[x][y] || (forceCache[x][y] = p5.Vector.fromAngle(get(x, y, t) * 2 * Math.PI))
+        // const getForce = (x, y, t) => p5.Vector.fromAngle(get(x, y, t) * 2 * Math.PI)
+
         return {
-            get,
+            get: getForce,
             update,
             energy
         }
     })()
 
-    new p5(sketch => {
+    new Loop(sketch => {
+        let start = null
         let t = 0
-        let stopped = false
+
         const particles = createParticles(1000, sketch)
 
         sketch.setup = () => {
             sketch.createCanvas(flowfieldSettings.getOuterWidth(), flowfieldSettings.getOuterHeight())
             sketch.background(0)
-            // sketch.noStroke()
             sketch.fill(255, 255, 255, 255)
         }
 
-        sketch.keyPressed = () => {
-            stopped = !stopped
-        }
-
         sketch.draw = () => {
-            if (stopped) return
+            if (!start) {
+                start = Date.now()
+                console.log(start)
+            }
             t += .01
+            
             sketch.push()
 
             // sketch.background(0)
@@ -219,24 +237,35 @@ const flow = async () => {
             //     }
             // }
 
-            flowfield.update()
-            // const e = flowfield.energy(t)
+            if (flowfield.update(t)) {
+                sketch.fill(0)
+                sketch.rect(0, 0, 150, 150)
+                sketch.fill(255)
+                sketch.text(t, 30, 30)
+                sketch.text(chunks.length, 30, 60)
+                sketch.text(sketch.millis(), 30, 90)
+                particles.update(flowfield, t)
+                particles.forEach(particle => {
+                    const v = flowfield.get(
+                        Math.floor(particle.position.x / flowfieldSettings.inner),
+                        Math.floor(particle.position.y / flowfieldSettings.inner),
+                        t
+                    )
 
-            particles.update(flowfield, t)
-
-            particles.forEach(particle => {
-                const f = flowfield.get(Math.floor(particle.position.x / flowfieldSettings.inner), Math.floor(particle.position.y / flowfieldSettings.inner), t)
-                const v = p5.Vector.fromAngle(f * 2 * sketch.PI)
-                particle.applyForce(v)
-                particle.update()
-                sketch.noStroke()
-                sketch.fill(255, 255, 255, sketch.map(particle.health, 0, 2.5, 50, 50))
-                sketch.circle(particle.position.x, particle.position.y, 2)
-            })
-            sketch.pop()
-
-            // sketch.text(particles.length(), 40, 40)
-            // sketch.text(e, 40, 80)
+                    particle.applyForce(v)
+                    particle.update()
+                    sketch.noStroke()
+                    sketch.fill(255, 255, 255, sketch.map(particle.health, 0, 2.5, 50, 50))
+                    sketch.circle(particle.position.x, particle.position.y, 2)
+                })
+                sketch.pop()
+            } else {
+                sketch.noLoop()
+                console.log(Date.now())
+                alert('end')
+                console.log(Date.now() - start)
+                window.image = sketch.image
+            }
         }
     })
 }
