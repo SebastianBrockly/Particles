@@ -5,6 +5,7 @@ import fetchData from './data'
 
 import Particle from '../Particle'
 import { Loop } from '../Draw'
+import { blend } from './utils'
 
 const flow = async () => {
     const fetchedData = await fetchData()
@@ -21,39 +22,12 @@ const flow = async () => {
 
     const chunks = _.chunk(data.map(d => d / max), flowfieldSettings.width * flowfieldSettings.height).map(chunk => _.shuffle(chunk))
 
-    // helpers
-    const blend = n => {
-        const w = n - Math.floor(n)
-        return [
-            [1 - w, Math.floor(n)],
-            [w, Math.floor(n) + 1]
-        ]
-    }
-
-
     const createParticles = (size, sketch) => {
         let _particles = []
 
         const forEach = (fn) => _particles.forEach(fn)
 
         const create = (flowfield, t) => {
-            // if (_particles.length === 0) {
-            //     return new Particle(
-            //         new p5.Vector(sketch.random((flowfieldSettings.getOuterWidth() / 2) - 50, (flowfieldSettings.getOuterWidth() / 2) + 50), sketch.random(flowfieldSettings.getOuterHeight() / 2, flowfieldSettings.getOuterHeight() / 2)),
-            //         new p5.Vector(sketch.random(-1, 1), sketch.random(-1, 1)),
-            //         new p5.Vector(0, 0),
-            //         2,
-            //         [flowfieldSettings.getOuterWidth(), flowfieldSettings.getOuterHeight()]
-            //     )
-            // }
-            // return new Particle(
-            //     _particles[0].position.copy(),
-            //     _particles[0].velocity.copy().rotate(sketch.random(-1, 1)),
-            //     new p5.Vector(0, 0),
-            //     2.5,
-            //     [flowfieldSettings.getOuterWidth(), flowfieldSettings.getOuterHeight()]
-            // )
-
             const positionX = sketch.random(0, flowfieldSettings.getOuterWidth()) / flowfieldSettings.inner
             const positionY = sketch.random(0, flowfieldSettings.getOuterHeight()) / flowfieldSettings.inner
 
