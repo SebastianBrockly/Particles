@@ -12,11 +12,42 @@ const flow = async () => {
 
     // flowfield settings
     const flowfieldSettings = {
-        width: 20,
-        height: 10,
-        inner: 80,
+        width: 40,
+        height: 20,
+        inner: 40,
         getOuterWidth: () => flowfieldSettings.width * flowfieldSettings.inner,
         getOuterHeight: () => flowfieldSettings.height * flowfieldSettings.inner
+    }
+
+    const createParticles2 = (size, sketch) => {
+        const particles = [...Array(size)].map(() => new Particle(
+            new p5.Vector(
+                sketch.random(0, flowfieldSettings.getOuterWidth()),
+                sketch.random(0, flowfieldSettings.getOuterHeight())
+            ),
+            new p5.Vector(0, 0),
+            new p5.Vector(0, 0),
+            0,
+            [flowfieldSettings.getOuterWidth(), flowfieldSettings.getOuterHeight()],
+            sketch.random(1, 6)
+        ))
+
+        const forEach = (fn) => particles.forEach(fn)
+
+        const update = (flowfield, t) => {
+            const activity = flowfield.energy(t)
+            
+            particles.forEach(particle => {
+                particle.health = particle.health * 0.5 + (activity > 0.2 ? activity * 2 : 0) * 0.5
+                particle.health = Math.min(2.5, particle.health)
+            })
+        }
+
+        return {
+            forEach,
+            update,
+            length: () => particles.length
+        }
     }
 
     const createParticles = (size, sketch) => {
@@ -161,7 +192,7 @@ const flow = async () => {
             return value
         }
 
-        const getForce = (x, y, t) => forceCache[x][y] || (forceCache[x][y] = p5.Vector.fromAngle(get(x, y, t) * 2 * Math.PI))
+        const getForce = (x, y, t) => forceCache[x][y] || (forceCache[x][y] = p5.Vector.fromAngle(get(x, y, t) * 8 * Math.PI))
 
         return {
             get: getForce,
@@ -174,7 +205,7 @@ const flow = async () => {
         let start = null
         let t = 0
 
-        const particles = createParticles(1000, sketch)
+        const particles = createParticles2(8000, sketch)
 
         sketch.setup = () => {
             sketch.createCanvas(flowfieldSettings.getOuterWidth(), flowfieldSettings.getOuterHeight())
@@ -188,7 +219,7 @@ const flow = async () => {
                 console.log(start)
             }
             t += .01
-            
+
             sketch.push()
 
             // sketch.background(0)
@@ -222,9 +253,12 @@ const flow = async () => {
 
                     particle.applyForce(v)
                     particle.update()
-                    sketch.noStroke()
-                    sketch.fill(255, 255, 255, sketch.map(particle.health, 0, 2.5, 50, 50))
-                    sketch.circle(particle.position.x, particle.position.y, 2)
+                    sketch.stroke(255, 255, 255, sketch.map(particle.health, 0, 2.5, 0, 10))
+                    sketch.line(particle.prevPosition.x, particle.prevPosition.y, particle.position.x, particle.position.y)
+                    particle.updatePrev()
+
+                    // sketch.circle(particle.position.x, particle.position.y, 2)
+
                 })
                 sketch.pop()
             } else {
@@ -233,6 +267,26 @@ const flow = async () => {
                 alert('end')
                 console.log(Date.now() - start)
                 window.image = sketch.image
+                // draw(image)
+            }
+        }
+    })
+}
+
+const draw = (image) => {
+    new p5(sketch => {
+        sketch.setup = () => {
+            const cnv = sketch.createCanvas(image.width, image.height)
+            sketch.fill(255)
+            sketch.noStroke()
+            sketch.background(0)
+            const max = Math.pow(image.max(), 0.5)
+            console.log(max)
+            for (let i = 0; i < image.width; i++) {
+                for (let j = 0; j < image.height; j++) {
+                    sketch.fill(255, 255, 255, sketch.map(Math.pow(image.pixels[i][j], 0.5), 0, max, 0, 255))
+                    sketch.circle(i, j, 2)
+                }
             }
         }
     })
