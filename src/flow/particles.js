@@ -12,6 +12,8 @@ const createRandom = (seed) => {
 }
 
 const createParticles = (size, settings) => {
+    Particle.setGlobalSettings(settings)
+
     const random = createRandom()
     const particles = [...Array(size)].map(() => new Particle(
         new p5.Vector(
@@ -50,12 +52,17 @@ const createParticles = (size, settings) => {
 
     const forEach = (fn) => particles.forEach(fn)
 
-    const update = (flowfield, t) => {
-        const activity = flowfield.energy(t)
+    const update = (energy) => {
+        const activity = energy
+        if (!activity) {
+            console.log(activity)
+        }
 
         particles.forEach(particle => {
-            particle.health = particle.health * 0.7 + (activity > 0.15 ? activity * 4 : 0) * 0.3
-            particle.health = Math.min(1.5, particle.health)
+            // particle.health = particle.health * 0.7 + (activity > 0.15 ? activity * 4 : 0) * 0.3
+            // particle.health = Math.min(1.5, particle.health)
+
+            particle.health = activity
         })
     }
 

@@ -7,6 +7,8 @@ import createParticles from './particles'
 
 import seedrandom from 'seedrandom'
 
+import { average } from './utils'
+
 const createShuffle = (seed) => {
     const random = seedrandom(seed)
     return (array) => array
@@ -16,7 +18,6 @@ const createShuffle = (seed) => {
 }
 
 const createParticleSystem = async (dataset, settings) => {
-    console.log(settings)
     const id = uuid()
     return new Promise(resolve => {
         new p5(sketch => {
@@ -28,13 +29,16 @@ const createParticleSystem = async (dataset, settings) => {
             const shuffle = createShuffle(99)
 
             const fields = _.chunk(data.map(d => d / max), width * height).map(shuffle).filter(chunk => chunk.length === width * height)
+            const energies = fields.map(average)
+
+            // const energies = fil
 
             let cnv
             let t = 0
 
             // progress: t / fields.length
             let step = 0
-            const flowfield = createFlowfield(fields, settings)
+            const flowfield = createFlowfield(fields, energies, settings)
             const particles = createParticles(settings.particles, settings)
 
             sketch.setup = () => {
@@ -46,7 +50,7 @@ const createParticleSystem = async (dataset, settings) => {
                 sketch.translate(50, 50)
                 sketch.stroke(0)
                 sketch.rect(0, 0, settings.getOuterWidth(), settings.getOuterHeight())
-                sketch.blendMode(sketch.REMOVE)
+                // sketch.blendMode(sketch.REMOVE)
                 sketch.colorMode(sketch.RGB, 255, 255, 255, 2000)
                 sketch.pop()
             }
@@ -58,7 +62,7 @@ const createParticleSystem = async (dataset, settings) => {
                 step += 1
 
                 if (flowfield.update(t) < 1) {
-                    particles.update(flowfield, t)
+                    particles.update(flowfield.energy(t))
                     particles.forEach(particle => {
                         const v = flowfield.get(
                             Math.floor(particle.position.x / settings.inner),
@@ -68,7 +72,7 @@ const createParticleSystem = async (dataset, settings) => {
 
                         particle.applyForce(v)
                         particle.update()
-                        sketch.stroke(255, 255, 255, sketch.map(particle.health, 0, 1.5, 0, 20))
+                        sketch.stroke(255, 255, 255, sketch.map(particle.health, 0, 0.8, 0, 20))
                         sketch.line(particle.prevPosition.x, particle.prevPosition.y, particle.position.x, particle.position.y)
                         particle.updatePrev()
                     })
