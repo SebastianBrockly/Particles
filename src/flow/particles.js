@@ -1,6 +1,6 @@
 import * as p5 from 'p5'
 
-import Particle from '../Particle'
+import Particle from './particle'
 import seedrandom from 'seedrandom'
 
 const createRandom = (seed) => {
