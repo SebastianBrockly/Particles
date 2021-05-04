@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= htmlWebpackPlugin.options.title %>
+  </title>
+  <style>
+    html,
+    body,
+    * {
+      margin: 0;
+      padding: 0;
+      font-family: 'Courier New', Courier, monospace;
+    }
+  </style>
+</head>
+
+<body>
+  <div class='gui'>
+    <div class='gui__data'>
+      <div class='gui__data-select'>
+        <select>
+          <option value='-1'>Select dataset</option>
+        </select>
+        <div class='arrowDown'></div>
+      </div>
+    </div>
+    <div class='gui__filter'>
+      <div class='gui__zoom-input'>
+        <label>Zoom</label>
+        <input />
+      </div>
+      <div class='gui__detail-input'>
+        <label>Smoothing</label>
+        <input />
+      </div>
+      <div class='gui__divider'></div>
+      <div class='gui__width-input'>
+        <label>Width</label>
+        <input />
+      </div>
+      <div class='gui__height-input'>
+        <label>Height</label>
+        <input />
+      </div>
+      <div class='gui__inner-input'>
+        <label>Inner</label>
+        <input />
+      </div>
+      <div class='gui__divider'></div>
+      <div class='gui__particles-input'>
+        <label>Particles</label>
+        <input />
+      </div>
+      <div class='gui__distortion-input'>
+        <label>Distortion</label>
+        <input />
+      </div>
+    </div>
+    <div class='gui__start'>
+      <div class='gui__start-button'>
+        Start
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

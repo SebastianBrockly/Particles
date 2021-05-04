@@ -1,0 +1,99 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.gui {
+    display: flex;
+    border-right: 1px solid black;
+    width: 300px;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.gui label {
+    padding-bottom: .5rem;
+    font-weight: bold;
+}
+
+.gui input {
+    margin-bottom: 1rem;
+    display: flex;
+    height: 2rem;
+    align-items: center;
+}
+
+.gui__data {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid black;
+    padding: 1rem;
+}
+
+.gui__data-select {
+    position: relative;
+    width: 100%;
+}
+
+.gui__filter {
+    padding: 1rem;
+    display: flex;
+    /* padding-left: 1rem; */
+    justify-content: space-between;
+    flex-direction: column;
+    width: 100%;
+    border: none;
+}
+
+.gui__filter > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.gui__data-select select {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    font-size: 15px;
+    width: 100%;
+}
+
+.gui__data-select select:focus {
+    outline: none;
+}
+
+.gui__start-button {
+    cursor: pointer;
+    background-color: black;
+    color: white;
+    height: 2.2rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gui__divider {
+    border-top: 1px solid black;
+    margin-bottom: 1rem;
+    margin-top: .5rem;
+    margin-left: -1rem;
+    width: calc(100% + 2rem);
+}
+
+.arrowDown {
+    width: 0; 
+    height: 0; 
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    
+    border-top: 10px solid #000;
+    position: absolute;
+    right: 0;
+    top: 5px;
+  }

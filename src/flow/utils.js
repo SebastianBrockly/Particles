@@ -6,3 +6,4 @@ export const blend = n => {
         [w, Math.floor(n) + 1]
     ]
 }
+

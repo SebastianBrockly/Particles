@@ -1,0 +1,44 @@
+{
+  "name": "particles5",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack serve --config ./webpack.config.js --mode development",
+    "start:flow": "node scripts/data.js && webpack serve --config ./webpack.config.js --mode development --env prog=flow",
+    "start:diagram": "webpack serve --config ./webpack.config.js --mode development --env prog=diagram",
+    "build:flow": "node scripts/data.js && webpack --config ./webpack.config.js --mode development --env prog=flow"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/runtime": "^7.13.10",
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.2.1",
+    "history": "^5.0.0",
+    "html-webpack-plugin": "^5.3.1",
+    "lodash": "^4.17.21",
+    "p5": "^1.3.1",
+    "p5.js-svg": "^0.5.2",
+    "seedrandom": "^3.0.5",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/plugin-transform-runtime": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
+    "babel-loader": "^8.2.2",
+    "copy-webpack-plugin": "^8.1.1",
+    "css-loader": "^5.2.4",
+    "mini-css-extract-plugin": "^1.6.0",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.32.0",
+    "webpack-cli": "^4.6.0",
+    "webpack-dev-server": "^3.11.2"
+  }
+}
