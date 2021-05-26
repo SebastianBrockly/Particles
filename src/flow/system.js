@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { v1 as uuid } from 'uuid'
 
 import createFlowfield from './flowfield'
-import createParticles from './particles'
+import createEmitter from './emitter'
 
 import seedrandom from 'seedrandom'
 
@@ -23,67 +23,78 @@ const createParticleSystem = async (dataset, settings) => {
         new p5(sketch => {
             const { data, max } = dataset
 
-            const width = settings.width
-            const height = settings.height
+            const width = settings.flowfieldWidth
+            const height = settings.flowfieldHeight
+
+            const innerWidth = settings.getOuterWidth() / settings.flowfieldWidth
+            const innerHeight = settings.getOuterHeight() / settings.flowfieldHeight 
 
             const shuffle = createShuffle(99)
-
-            const fields = _.chunk(data.map(d => d / max), width * height).map(shuffle).filter(chunk => chunk.length === width * height)
+            
+            const fields = _.chunk(data.map(d => d), width * height)
+                .map(shuffle).filter(chunk => chunk.length === width * height)
+            
             const energies = fields.map(average)
-
-            // const energies = fil
 
             let cnv
             let t = 0
 
-            // progress: t / fields.length
-            let step = 0
             const flowfield = createFlowfield(fields, energies, settings)
-            const particles = createParticles(settings.particles, settings)
+            const emitter = createEmitter('static')(settings.particles, settings)
+            const margin = settings.getOuterWidth() * 0.1
 
             sketch.setup = () => {
-                cnv = sketch.createCanvas(settings.getOuterWidth() + 100, settings.getOuterHeight() + 100)
-                sketch.background(255)
+                
+                cnv = sketch.createCanvas(settings.getOuterWidth() + margin, settings.getOuterHeight() + (margin * 2))
+                sketch.stroke(0)
+                sketch.noStroke()
+                sketch.background(255, 255, 255, 255)
                 sketch.fill(0)
-                sketch.stroke(0)
-                sketch.push()
-                sketch.translate(50, 50)
-                sketch.stroke(0)
-                sketch.rect(0, 0, settings.getOuterWidth(), settings.getOuterHeight())
-                // sketch.blendMode(sketch.REMOVE)
-                sketch.colorMode(sketch.RGB, 255, 255, 255, 2000)
-                sketch.pop()
+                sketch.rect(margin / 2, margin / 2, settings.getOuterWidth(), settings.getOuterHeight())
             }
 
             sketch.draw = () => {
-                sketch.push()
-                sketch.translate(50, 50)
-                t += settings.timestep
-                step += 1
+                t += settings.step
 
+                const e = flowfield.energy(t)
                 if (flowfield.update(t) < 1) {
-                    particles.update(flowfield.energy(t))
-                    particles.forEach(particle => {
+                    emitter.update()
+                    emitter.particles.forEach(particle => {
                         const v = flowfield.get(
-                            Math.floor(particle.position.x / settings.inner),
-                            Math.floor(particle.position.y / settings.inner),
+                            Math.floor(particle.position.x / innerWidth),
+                            Math.floor(particle.position.y / innerHeight),
                             t
                         )
-
                         particle.applyForce(v)
+                        particle.applyEnergy(e)
                         particle.update()
-                        sketch.stroke(255, 255, 255, sketch.map(particle.health, 0, 0.8, 0, 20))
-                        sketch.line(particle.prevPosition.x, particle.prevPosition.y, particle.position.x, particle.position.y)
+                        sketch.noStroke()
+                        sketch.stroke(255, 255, 255, sketch.map(particle.health, 0, settings.maxHealthRange, 0, 20))
+                        sketch.line(particle.prevPosition.x + (margin / 2), particle.prevPosition.y + (margin / 2), particle.position.x + (margin / 2), particle.position.y + (margin / 2))
+
+                        sketch.circle()
+                        
                         particle.updatePrev()
                     })
                 } else {
                     sketch.noLoop()
-                    sketch.save(cnv, `${id}.jpg`)
+                    sketch.fill(0, 0, 0, 255)
+                    sketch.textAlign(sketch.CENTER)
+                    const fontSize = sketch.map(settings.getOuterWidth(), 0, 6000, 10, 140)
+                    sketch.textFont('Courier', sketch.map(settings.getOuterWidth(), 0, 6000, 10, 140))
+                    sketch.textStyle(sketch.BOLD)
+                    sketch.text(settings.title, settings.getOuterWidth() / 2 + margin / 2, settings.getOuterHeight() + margin + fontSize)
+                    sketch.textFont('Courier', sketch.map(settings.getOuterWidth(), 0, 6000, 10, 140) / 2)
+                    const date = new Date()
+                    const month = String(date.getMonth() + 1).length === 2 ? `${date.getMonth() + 1}` : `0${date.getMonth() + 1}`
+                    sketch.textStyle(sketch.ITALIC)
+                    sketch.text(`${date.getFullYear()}-${month}-${date.getDate()}`, settings.getOuterWidth() / 2 + margin / 2, settings.getOuterHeight() + margin + fontSize + fontSize)
                     sketch.save(settings, `${id}.json`)
-                    sketch.remove()
-                    resolve()
+                    resolve({
+                        canvas: cnv,
+                        sketch: sketch
+                    })
                 }
-                sketch.pop()
             }
         })
     })

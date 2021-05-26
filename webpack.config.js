@@ -12,15 +12,6 @@ const mapEnvToProgram = (env) => {
             title: 'FLOW'
         }
     }
-
-    if (env.prog === 'diagram') {
-        return {
-            entry: path.resolve(__dirname, './src/diagram/index.js'),
-            template: path.resolve(__dirname, './src/diagram/index.html'),
-            port: 4051,
-            title: 'DIAGRAM'
-        }
-    }
 }
 
 module.exports = (env) => {

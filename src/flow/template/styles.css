@@ -6,94 +6,165 @@ html,
 body {
     margin: 0;
     padding: 0;
+    font-size: 12px;
+}
+
+body,
+input,
+select {
+    font-family: "Courier New", Courier, monospace;
+}
+
+input,
+select {
+    outline-color: black;
 }
 
 .gui {
     display: flex;
-    border-right: 1px solid black;
     width: 300px;
-    flex-direction: column;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    font-size: 12px;
+    position: relative;
+    max-height: 100vh;
     height: 100vh;
+    overflow: scroll;
 }
 
-.gui label {
-    padding-bottom: .5rem;
+.gui-column {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1;
+}
+
+.gui-row {
+    display: flex;
+    flex-direction: column;
+    margin: 1rem;
+}
+
+.gui-description {
+    background-color: black;
+    color: white;
+    margin: -1rem;
+    padding: 1rem;
+}
+
+.gui-description-title {
+    font-size: 16px;
+}
+
+.gui-label {
+    margin-bottom: 1rem;
+    margin-top: 1.2rem;
     font-weight: bold;
 }
 
-.gui input {
-    margin-bottom: 1rem;
+.gui-inputs {
     display: flex;
+}
+
+.gui-inputs > * {
+    margin-right: 1rem;
+}
+
+.gui-inputs > *:last-child {
+    margin-right: 0px;
+}
+
+.gui-input {
+    width: 100%;
     height: 2rem;
-    align-items: center;
 }
 
-.gui__data {
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid black;
+.gui-select {
+    height: 2rem;
+}
+
+.gui-divider {
+    width: 100%;
+    height: 1px;
+    background-color: black;
+}
+
+.gui-button {
+    background-color: black;
     padding: 1rem;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    position: fixed;
+    bottom: 0rem;
+    left: 1px;
+    width: 298px;
+    border: 1rem solid white;
 }
 
-.gui__data-select {
+.gui-collapsible {
+    margin: -1rem;
+    padding: 1rem;
+    border-top: 1px solid black;
     position: relative;
-    width: 100%;
 }
 
-.gui__filter {
+.gui-collapsible--open {
+    border-top: 1px solid white;
+}
+
+.gui-collapsible:after {
+    content: "";
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #000;
+
+    width: 0;
+    height: 0;
+    position: absolute;
+    right: 1rem;
+    top: 1.3rem;
+}
+
+.gui-collapsible--open:after {
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #fff;
+    top: 0.9rem;
+}
+
+.gui-collapsible-title {
+    font-weight: bold;
+    background-color: white;
+    color: black;
+    margin: -1rem;
     padding: 1rem;
-    display: flex;
-    /* padding-left: 1rem; */
-    justify-content: space-between;
-    flex-direction: column;
-    width: 100%;
-    border: none;
-}
-
-.gui__filter > div {
-    display: flex;
-    flex-direction: column;
-}
-
-.gui__data-select select {
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-    border: none;
-    font-size: 15px;
-    width: 100%;
-}
-
-.gui__data-select select:focus {
-    outline: none;
-}
-
-.gui__start-button {
     cursor: pointer;
+    user-select: none;
+    font-size: 1.08rem;
+}
+
+.gui-collapsible--open .gui-collapsible-title {
     background-color: black;
     color: white;
-    height: 2.2rem !important;
+}
+
+.gui-collapsible-items {
+    display: none;
+    margin-top: 1rem;
+}
+
+.gui-collapsible--open .gui-collapsible-items {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
 }
 
-.gui__divider {
-    border-top: 1px solid black;
-    margin-bottom: 1rem;
-    margin-top: .5rem;
-    margin-left: -1rem;
-    width: calc(100% + 2rem);
+#app {
 }
 
-.arrowDown {
-    width: 0; 
-    height: 0; 
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    
-    border-top: 10px solid #000;
+.p5Canvas {
     position: absolute;
-    right: 0;
-    top: 5px;
-  }
+    left: 300px;
+    top: 0;
+}

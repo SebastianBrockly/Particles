@@ -6,94 +6,42 @@ import { blend } from './utils'
 // eine liste von daten/sensordaten-feldern (hier länge des kraftvektors)
 // über welche interpoliert wird
 // settings
-const createFlowfield = (fields, { width, height, distortion }) => {
-    let cache = {}
-    // create initial cache values
-    for (let i = 0; i < width; i++) {
-        cache[i] = {}
-        for (let j = 0; j < height; j++) {
-            cache[i][j] = {}
-        }
-    }
-
-    let forceCache = {}
-    // create initial cache values
-    for (let i = 0; i < width; i++) {
-        forceCache[i] = {}
-        for (let j = 0; j < height; j++) {
-            forceCache[i][j] = null
-        }
-    }
-
+const createFlowfield = (fields, energies, { width, height, distortion, neighbours }) => {
     // return current loop index
     const update = (t) => {
-        // clear cache
-        for (let i = 0; i < width; i++) {
-            for (let j = 0; j < height; j++) {
-                cache[i][j] = {}
-                forceCache[i][j] = null
-            }
-        }
         return Math.floor(t / fields.length)
     }
 
     const energy = (t) => {
-        const [a, b] = blend(t % fields.length)
-        const v1 = fields[a[1]] ? fields[a[1]].reduce(
-            (acc, val) => {
-                acc += val
-                return acc
-            }, 0
-        ) : 0
-
-        const v2 = fields[b[1]] ? fields[b[1]].reduce(
-            (acc, val) => {
-                acc += val
-                return acc
-            }, 0
-        ) : 0
-
-        return (v1 * a[0] + v2 * b[0]) / (width * height)
+        const [a, b] = blend(t % (fields.length - 1))
+        const en = energies[a[1]] * a[0] + energies[b[1]] * b[0]
+        return en
     }
 
-    const get = (x, y, t, neighbours = true) => {
-        if (cache[x][y][neighbours ? 'neighbours' : 'computed']) {
-            return cache[x][y][neighbours ? 'neighbours' : 'computed']
-        }
+    const get = (x, y, t) => {
+        const [a, b] = blend(t % (fields.length - 1))
 
-        const [a, b] = blend(t % fields.length)
+        let value = 0
+        let length = 0
 
-        const v1 = (fields[a[1]] ? fields[a[1]][x * height + y] : 0) * a[0]
-        const v2 = (fields[b[1]] ? fields[b[1]][x * height + y] : 0) * b[0]
+        for (let i = x - neighbours; i < x + neighbours; i++) {
+            for (let j = y - neighbours; j < y + neighbours; j++) {
+                length += 1
+                const _x = (i + width) % width
+                const _y = (j + height) % height
 
-        let neighboursValues = 0
-        const neighs = []
-        if (neighbours) {
-            for (let i = x - 3; i < x + 3; i++) {
-                for (let j = y - 3; j < y + 3; j++) {
-                    const x = (i + width) % width
-                    const y = (j + height) % height
+                const v1 = (fields[a[1]] ? fields[a[1]][_x * height + _y] : 0) * a[0]
+                const v2 = (fields[b[1]] ? fields[b[1]][_x * height + _y] : 0) * b[0]
 
-                    neighs.push([x, y])
-
-                }
+                const dist = 1 / (Math.max(Math.abs(i - x), Math.abs(j - y)) + 1)
+                value += (v1 + v2) * dist
             }
-            neighboursValues = neighs.reduce(
-                (acc, neigh) => {
-                    acc += get(neigh[0], neigh[1], t, false)
-                    return acc
-                }, 0
-            )
         }
 
-        // const value = neighboursValues ? (v1 + v2 + neighboursValues) / 2 : v1 + v2
-        const value = (neighboursValues + v1 + v2) / (neighs.length + 1)
-        cache[x][y][neighbours ? 'neighbours' : 'computed'] = value
-
-        return value
+        return value / length
     }
 
-    const getForce = (x, y, t) => forceCache[x][y] || (forceCache[x][y] = p5.Vector.fromAngle(get(x, y, t) * distortion * Math.PI))
+    const getForce = (x, y, t) => p5.Vector.fromAngle(get(x, y, t) * distortion * Math.PI)
 
     return {
         get: getForce,

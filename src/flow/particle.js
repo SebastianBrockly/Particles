@@ -1,7 +1,13 @@
-const maxSpeed = 4.0
-const maxForce = 0.5
-
+let maxSpeed = 4.0
+let maxForce = 0.5
+let modHealth = 0.5
 class Particle {
+    static setGlobalSettings = settings => {
+        maxSpeed = settings.maxSpeed || maxSpeed
+        maxForce = settings.maxForce || maxForce
+        modHealth = settings.modHealth || modHealth
+    }
+
     constructor(position, velocity, acceleration, health, boundaries, mass) {
         this.position = position
         this.velocity = velocity
@@ -9,7 +15,6 @@ class Particle {
         this.mass = mass
         this.boundaries = boundaries
         this.health = health
-
         this.prevPosition = this.position.copy()
     }
 
@@ -17,14 +22,20 @@ class Particle {
         return this.health > 0
     }
 
+    getMaxForce = () => {
+        return maxForce + (Math.random() * 0.2 - 0.1)
+    }
+
+    getMaxSpeed = () => {
+        return maxSpeed - (Math.random() * 2 - 1)
+    }
+
     applyForce = (force) => {
         this.acceleration.add(force).div(this.mass).limit(maxForce)
-        // this.acceleration.add(force.limit(maxForce))
     }
 
     applyEnergy = (energy) => {
-        this.health += energy
-        this.health = Math.max(energy, 2)
+        this.health = this.health * modHealth + energy * (1 - modHealth)
     }
 
     bounds = () => {
@@ -57,7 +68,6 @@ class Particle {
 
         this.acceleration.limit(0)
         this.bounds()
-        // this.health -= 0.01
     }
 }
 
